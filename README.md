@@ -69,7 +69,8 @@ Room fue elegido para la persistencia local debido a su simplicidad y capacidad 
 El manejo de la autenticación se hizo utilizando Firebase Authentication debido a su facilidad de configuración y soporte para múltiples proveedores de autenticación.
 
 8. Estructura del proyecto
-   8.1. data
+
+    8.1. data
     Esta capa contiene las fuentes de datos, ya sea locales (Room) o remotas (Firebase).
     
     local/db:
