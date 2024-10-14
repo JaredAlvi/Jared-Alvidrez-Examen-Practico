@@ -29,47 +29,61 @@ class TaskViewModel(
 ) : AndroidViewModel(application) {
 
     private val _tasks = MutableLiveData<List<Task>>()
-    val tasks: LiveData<List<Task>> = _tasks
+    private val _filteredTasks = MutableLiveData<List<Task>>()
+    val filteredTasks: LiveData<List<Task>> = _filteredTasks
 
     init {
-        // Al inicializar el ViewModel, obtenemos todas las tareas
-        refreshTasks()
-    }
-
-    // Función para refrescar la lista de tareas
-    private fun refreshTasks() {
-        // Observa la lista de tareas desde el repositorio
-        getTasksUseCase().observeForever { taskList ->
-            _tasks.value = taskList  // Actualiza el LiveData con las nuevas tareas
+        // Observamos el LiveData de getTasksUseCase y actualizamos las listas de tareas
+        getTasksUseCase().observeForever { tasks ->
+            _tasks.value = tasks
+            _filteredTasks.value = tasks  // Inicialmente mostrar todas las tareas
         }
     }
 
-    // Función para insertar una nueva tarea
+    fun setFilter(filter: FilterType) {
+        _filteredTasks.value = when (filter) {
+            FilterType.ALL -> _tasks.value
+            FilterType.COMPLETED -> _tasks.value?.filter { it.isCompleted }
+            FilterType.PENDING -> _tasks.value?.filter { !it.isCompleted }
+        }
+    }
+
+    fun sortTasksByTitle() {
+        _filteredTasks.value = _filteredTasks.value?.sortedBy { it.title }
+    }
+
+    fun sortTasksByCompletion() {
+        _filteredTasks.value = _filteredTasks.value?.sortedBy { it.isCompleted }
+    }
+
     fun insert(task: Task) = viewModelScope.launch {
-        addTaskUseCase(task)  // Usa el caso de uso para insertar la tarea
-        refreshTasks()  // Refresca la lista de tareas después de insertar
+        addTaskUseCase(task)
+        refreshTasks()
     }
 
-    // Función para actualizar una tarea existente
     fun update(task: Task) = viewModelScope.launch {
-        updateTaskUseCase(task)  // Usa el caso de uso para actualizar la tarea
-        refreshTasks()  // Refresca la lista de tareas
+        updateTaskUseCase(task)
+        refreshTasks()
     }
 
-    // Función para actualizar el estado de completado de una tarea
     fun updateTaskCompletion(task: Task, isCompleted: Boolean) = viewModelScope.launch {
         val updatedTask = task.copy(isCompleted = isCompleted)
-        update(updatedTask)  // Actualiza la tarea con el nuevo estado
+        update(updatedTask)
     }
 
-    // Función para eliminar una tarea
     fun delete(task: Task) = viewModelScope.launch {
-        deleteTaskUseCase(task)  // Usa el caso de uso para eliminar la tarea
-        refreshTasks()  // Refresca la lista de tareas
+        deleteTaskUseCase(task)
+        refreshTasks()
     }
 
-    // Función para eliminar múltiples tareas
     fun deleteTasks(tasks: List<Task>) = viewModelScope.launch {
-        tasks.forEach { delete(it) }  // Elimina cada tarea de la lista
+        tasks.forEach { delete(it) }
+    }
+
+    private fun refreshTasks() {
+        getTasksUseCase().observeForever { tasks ->
+            _tasks.value = tasks
+            _filteredTasks.value = tasks  // Actualizar las tareas filtradas
+        }
     }
 }
