@@ -57,17 +57,61 @@ classpath 'com.google.gms:google-services:4.3.10'
 5. Sincroniza el proyecto con Gradle.
 Ejecución de la Aplicación
 
-Conéctate a un dispositivo físico o emulador desde Android Studio.
+6. Conéctate a un dispositivo físico o emulador desde Android Studio.
 Ejecuta la aplicación usando el botón Run en Android Studio o usa el siguiente comando en la terminal:
 bash
 ./gradlew assembleDebug
 Decisiones Técnicas
 
-Arquitectura
+7. Arquitectura
 Se implementó una arquitectura MVVM (Model-View-ViewModel) para asegurar un desacoplamiento entre la lógica de negocio y la interfaz de usuario.
 Room fue elegido para la persistencia local debido a su simplicidad y capacidad de trabajar con LiveData.
 El manejo de la autenticación se hizo utilizando Firebase Authentication debido a su facilidad de configuración y soporte para múltiples proveedores de autenticación.
-Persistencia de Datos
+
+8. Estructura del proyecto
+  1. data
+  
+  Esta capa contiene las fuentes de datos, ya sea locales (Room) o remotas (Firebase).
+  
+  local/db:
+  TaskDao: Interfaz para las operaciones CRUD en la base de datos local Room.
+  TaskDatabase: Clase abstracta que proporciona acceso a las instancias de TaskDao.
+  local/model:
+  TaskEntity: Entidad que representa las tareas en la base de datos Room.
+  remote:
+  FirebaseAuthService: Clase encargada de la autenticación utilizando Firebase Authentication.
+  repository:
+  TaskRepositoryImpl: Implementación del repositorio que interactúa tanto con la base de datos local (Room) como con Firebase.
+  2. di
+  
+  Este paquete contiene el archivo de inyección de dependencias.
+  
+  AppModule: Clase que inicializa las dependencias como la base de datos, repositorio, y ViewModels.
+  3. domain
+  
+  Esta capa contiene la lógica de negocio y los modelos de dominio.
+  
+  model:
+  Task: Clase de dominio que representa una tarea en el sistema.
+  Funciones de mapeo (toEntity y toDomainModel) para convertir entre Task (dominio) y TaskEntity (base de datos).
+  repository:
+  TaskRepository: Interfaz para definir las operaciones CRUD.
+  usecase:
+  Contiene los casos de uso de la aplicación (Add, Delete, Get, Update).
+  4. presentation
+  
+  Contiene la lógica de la interfaz de usuario.
+  
+  auth:
+  AuthViewModel: Manejador de autenticación usando Firebase.
+  task/ui:
+  TaskViewModel: Maneja las tareas (inserción, eliminación, actualización) con LiveData y Room.
+  MainScreen, AddEditTaskScreen, AppNavigation: Composables que manejan la UI de la aplicación con Jetpack Compose.
+  5. ui.theme
+  
+  Maneja los temas visuales de la aplicación.
+
+9. Persistencia de Datos
 Las tareas se guardan en una base de datos local usando Room con un esquema simple de TaskEntity.
 Se utiliza un repositorio (TaskRepository) para mediar entre los datos de la base de datos y la UI.
 Interfaz de Usuario
